@@ -463,10 +463,10 @@ class MyAdminIndexView(AdminIndexView):
             return redirect(url_for('admin.login_view'))
         connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
         currzsky = connzsky.cursor()
-        totalsql = 'select count(id) from search_hash'
+        totalsql = 'select max(id) from search_hash'
         currzsky.execute(totalsql)
         totalcounts=currzsky.fetchall()
-        total=int(totalcounts[0]['count(id)'])
+        total=int(totalcounts[0]['max(id)'])
         todaysql='select count(id) from search_hash where to_days(search_hash.create_time)= to_days(now())'
         currzsky.execute(todaysql)
         todaycounts=currzsky.fetchall()
