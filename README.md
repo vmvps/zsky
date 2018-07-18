@@ -4,6 +4,8 @@
 
 **[加群](http://shang.qq.com/wpa/qunwpa?idkey=d119da6023cc49729a61139ca4b8bb0ee770d8d9a89383939c4a45159f82bc6d)获取安装脚本、更多模板、更多帮助**
 
+![20180718164224.png](https://i.loli.net/2018/07/18/5b4efd8cedc94.png)
+
 安装脚本只支持Centos7+Python2.7环境
 
 主机配置要求：至少1G内存、至少100G硬盘，至少1G SWAP，具有公网IP的国外主机/服务器
