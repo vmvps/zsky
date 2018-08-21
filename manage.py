@@ -33,16 +33,13 @@ from werkzeug.security import generate_password_hash,check_password_hash
 import jieba
 import jieba.analyse
 import MySQLdb
-#from flask_debugtoolbar import DebugToolbarExtension
+
 
 file_path = os.path.join(os.path.dirname(__file__), 'uploads')
 # Initialize Flask and set some config values
 app = Flask(__name__)
 app.config['DEBUG']=True
 app.config['SECRET_KEY'] = 'super-secret'
-#debug_toolbar=DebugToolbarExtension()
-#debug_toolbar.init_app(app)
-#app.config['DEBUG_TB_INTERCEPT_REDIRECTS']=False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:123456@127.0.0.1:3306/zsky'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_POOL_SIZE']=5000
@@ -156,7 +153,6 @@ class User(db.Model, UserMixin):
         return True
     def is_anonymous(self):
         return False
-    def get_id(self):
         return self.id
     def __unicode__(self):
         return self.name
