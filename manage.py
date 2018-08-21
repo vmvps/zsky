@@ -1,5 +1,6 @@
 #encoding:utf-8
 #我本戏子2017.7
+from __future__ import print_function
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -609,14 +610,14 @@ def create_user(name,password,email):
     user = User(name=name,password=password,email=email)
     db.session.add(user)
     db.session.commit()
-    print u"管理员创建成功!"
+    print("管理员创建成功!")
 
 @manager.option('-np', '--newpassword', dest='newpassword')
 def changepassword(newpassword):
     name = raw_input(u'输入用户名:')
     thisuser = User.query.filter_by(name=name).first()
     if not thisuser:
-        print u"用户不存在,请重新输入用户名!"
+        print("用户不存在,请重新输入用户名!")
         name = raw_input(u'输入用户名:')    
         thisuser = User.query.filter_by(name=name).first()
     if newpassword is None:
@@ -624,7 +625,7 @@ def changepassword(newpassword):
     thisuser.password=newpassword
     db.session.add(thisuser)
     db.session.commit()
-    print u"密码已更新,请牢记新密码!"
+    print("密码已更新,请牢记新密码!")
 
 if __name__ == '__main__':
     manager.run()
