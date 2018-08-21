@@ -31,7 +31,7 @@ from flask_caching import Cache
 from werkzeug.security import generate_password_hash,check_password_hash
 import jieba
 import jieba.analyse
-import pymysql
+import MySQLdb
 #from flask_debugtoolbar import DebugToolbarExtension
 
 file_path = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -42,7 +42,7 @@ app.config['SECRET_KEY'] = 'super-secret'
 #debug_toolbar=DebugToolbarExtension()
 #debug_toolbar.init_app(app)
 #app.config['DEBUG_TB_INTERCEPT_REDIRECTS']=False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@127.0.0.1:3306/zsky'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:123456@127.0.0.1:3306/zsky'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_POOL_SIZE']=5000
 db = SQLAlchemy(app)
@@ -200,8 +200,8 @@ def tothunder_filter(magnet):
 app.add_template_filter(tothunder_filter,'tothunder')
 
 def sphinx_conn():
-    conn = pymysql.connect(host=DB_HOST, port=DB_PORT_SPHINX, user=DB_USER, password=DB_PASS, db=DB_NAME_SPHINX,
-                           charset=DB_CHARSET, cursorclass=pymysql.cursors.DictCursor)
+    conn = MySQLdb.connect(host=DB_HOST, port=DB_PORT_SPHINX, user=DB_USER, password=DB_PASS, db=DB_NAME_SPHINX,
+                           charset=DB_CHARSET)
     curr = conn.cursor()
     return (conn,curr)
     
@@ -286,7 +286,7 @@ def search_results(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
     currzsky.execute(taginsertsql,query)
@@ -318,7 +318,7 @@ def search_results_bylength(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
     currzsky.execute(taginsertsql,query)
@@ -350,7 +350,7 @@ def search_results_bycreate_time(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
     currzsky.execute(taginsertsql,query)
@@ -382,7 +382,7 @@ def search_results_byrequests(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
     currzsky.execute(taginsertsql,query)
@@ -461,7 +461,7 @@ class MyAdminIndexView(AdminIndexView):
     def index(self):
         if not current_user.is_authenticated:
             return redirect(url_for('admin.login_view'))
-        connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+        connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET)
         currzsky = connzsky.cursor()
         totalsql = 'select max(id) from search_hash'
         currzsky.execute(totalsql)
