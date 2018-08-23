@@ -33,6 +33,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 import jieba
 import jieba.analyse
 import MySQLdb
+import MySQLdb.cursors
 
 
 file_path = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -197,7 +198,7 @@ def tothunder_filter(magnet):
 app.add_template_filter(tothunder_filter,'tothunder')
 
 def sphinx_conn():
-    conn = MySQLdb.connect(host=DB_HOST, port=DB_PORT_SPHINX, user=DB_USER, password=DB_PASS, db=DB_NAME_SPHINX,
+    conn = MySQLdb.connect(host=DB_HOST, port=DB_PORT_SPHINX, user=DB_USER, passwd=DB_PASS, db=DB_NAME_SPHINX,
                            charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     curr = conn.cursor()
     return (conn,curr)
@@ -213,7 +214,7 @@ thisweek = int(time.mktime(datetime.datetime.now().timetuple())) - 86400 * 7
 def weekhot():
     conn,curr = sphinx_conn()
     weekhotsql = 'SELECT * FROM film WHERE create_time>%s order by requests desc limit 50'
-    curr.execute(weekhotsql, thisweek)
+    curr.execute(weekhotsql, [thisweek])
     weekhot = curr.fetchall()
     sphinx_close(curr,conn)
     form = SearchForm()
@@ -286,7 +287,7 @@ def search_results(query,page=1):
     connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -318,7 +319,7 @@ def search_results_bylength(query,page=1):
     connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -350,7 +351,7 @@ def search_results_bycreate_time(query,page=1):
     connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -382,7 +383,7 @@ def search_results_byrequests(query,page=1):
     connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -408,7 +409,7 @@ def search_results_byrequests(query,page=1):
 def detail(info_hash):
     conn,curr = sphinx_conn()
     querysql='SELECT * FROM film WHERE info_hash=%s'
-    curr.execute(querysql,info_hash)
+    curr.execute(querysql,[info_hash])
     result=curr.fetchone()
     sphinx_close(curr,conn)
     #hash=Search_Hash.query.filter_by(id=id).first()
