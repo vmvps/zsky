@@ -21,7 +21,7 @@ from random import randint
 from socket import inet_ntoa
 from collections import deque
 from Queue import Queue
-import pymysql
+import MySQLdb
 from DBUtils.PooledDB import PooledDB
 import math
 from struct import pack, unpack
@@ -382,14 +382,10 @@ class Master(Thread):
         self.setDaemon(True)
         self.queue = Queue(maxsize = 1000000)
         self.metadata_queue = Queue(maxsize = 1000000)
-        self.pool = PooledDB(pymysql,50,host=DB_HOST,user=DB_USER,passwd=DB_PASS,db=DB_NAME,port=3306,charset="utf8mb4") #50为连接池里的最少连接数
+        self.pool = PooledDB(MySQLdb,50,host=DB_HOST,user=DB_USER,passwd=DB_PASS,db=DB_NAME,port=3306,charset="utf8mb4") #50为连接池里的最少连接数
         self.dbconn = self.pool.connection()
         self.dbcurr = self.dbconn.cursor()
         self.dbcurr.execute('SET NAMES utf8mb4')
-        #self.dbconn = mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, charset='utf8')
-        #self.dbconn.autocommit(False)
-        #self.dbcurr = self.dbconn.cursor()
-        #self.dbcurr.execute('SET NAMES utf8')
         self.n_reqs = self.n_valid = self.n_new = 0
         self.n_downloading_lt = self.n_downloading_pt = 0
         self.visited = set()

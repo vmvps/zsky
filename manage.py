@@ -1,5 +1,6 @@
 #encoding:utf-8
 #我本戏子2017.7
+from __future__ import print_function
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -31,18 +32,16 @@ from flask_caching import Cache
 from werkzeug.security import generate_password_hash,check_password_hash
 import jieba
 import jieba.analyse
-import pymysql
-#from flask_debugtoolbar import DebugToolbarExtension
+import MySQLdb
+import MySQLdb.cursors
+
 
 file_path = os.path.join(os.path.dirname(__file__), 'uploads')
 # Initialize Flask and set some config values
 app = Flask(__name__)
 app.config['DEBUG']=True
 app.config['SECRET_KEY'] = 'super-secret'
-#debug_toolbar=DebugToolbarExtension()
-#debug_toolbar.init_app(app)
-#app.config['DEBUG_TB_INTERCEPT_REDIRECTS']=False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@127.0.0.1:3306/zsky'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:123456@127.0.0.1:3306/zsky'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_POOL_SIZE']=5000
 db = SQLAlchemy(app)
@@ -155,7 +154,6 @@ class User(db.Model, UserMixin):
         return True
     def is_anonymous(self):
         return False
-    def get_id(self):
         return self.id
     def __unicode__(self):
         return self.name
@@ -174,6 +172,10 @@ def make_cache_key(*args, **kwargs):
     path = request.path
     args = str(hash(frozenset(request.args.items())))
     return (path + args).encode('utf-8')
+
+def replace_keyword_filter(str, old, new):
+    return re.sub(r'(?i)('+old+')', new, str)
+app.add_template_filter(replace_keyword_filter,'replace')
 
 def filelist_filter(info_hash):
     try:
@@ -196,8 +198,8 @@ def tothunder_filter(magnet):
 app.add_template_filter(tothunder_filter,'tothunder')
 
 def sphinx_conn():
-    conn = pymysql.connect(host=DB_HOST, port=DB_PORT_SPHINX, user=DB_USER, password=DB_PASS, db=DB_NAME_SPHINX,
-                           charset=DB_CHARSET, cursorclass=pymysql.cursors.DictCursor)
+    conn = MySQLdb.connect(host=DB_HOST, port=DB_PORT_SPHINX, user=DB_USER, passwd=DB_PASS, db=DB_NAME_SPHINX,
+                           charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     curr = conn.cursor()
     return (conn,curr)
     
@@ -212,7 +214,7 @@ thisweek = int(time.mktime(datetime.datetime.now().timetuple())) - 86400 * 7
 def weekhot():
     conn,curr = sphinx_conn()
     weekhotsql = 'SELECT * FROM film WHERE create_time>%s order by requests desc limit 50'
-    curr.execute(weekhotsql, thisweek)
+    curr.execute(weekhotsql, [thisweek])
     weekhot = curr.fetchall()
     sphinx_close(curr,conn)
     form = SearchForm()
@@ -282,10 +284,10 @@ def search_results(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -314,10 +316,10 @@ def search_results_bylength(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -346,10 +348,10 @@ def search_results_bycreate_time(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -378,10 +380,10 @@ def search_results_byrequests(query,page=1):
     for word in sensitivewordslist:
         if word.search(query):
             return redirect(url_for('index'))
-    connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+    connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
     currzsky = connzsky.cursor()
     taginsertsql = 'REPLACE INTO search_tags(tag) VALUES(%s)'
-    currzsky.execute(taginsertsql,query)
+    currzsky.execute(taginsertsql,[query])
     connzsky.commit()
     currzsky.close()
     connzsky.close()
@@ -407,13 +409,13 @@ def search_results_byrequests(query,page=1):
 def detail(info_hash):
     conn,curr = sphinx_conn()
     querysql='SELECT * FROM film WHERE info_hash=%s'
-    curr.execute(querysql,info_hash)
+    curr.execute(querysql,[info_hash])
     result=curr.fetchone()
     sphinx_close(curr,conn)
     #hash=Search_Hash.query.filter_by(id=id).first()
     if not result:
         return redirect(url_for('index'))        
-    fenci_list=jieba.analyse.extract_tags(result['name'], 8)
+    fenci_list=jieba.analyse.extract_tags(result['name'], 4)
     tags=Search_Tags.query.order_by(Search_Tags.id.desc()).limit(20)
     form=SearchForm()
     return render_template('detail.html',form=form,tags=tags,hash=result,fenci_list=fenci_list,sitename=sitename)
@@ -457,12 +459,12 @@ class MyAdminIndexView(AdminIndexView):
     def index(self):
         if not current_user.is_authenticated:
             return redirect(url_for('admin.login_view'))
-        connzsky = pymysql.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET,cursorclass=pymysql.cursors.DictCursor)
+        connzsky = MySQLdb.connect(host=DB_HOST,port=DB_PORT_MYSQL,user=DB_USER,password=DB_PASS,db=DB_NAME_MYSQL,charset=DB_CHARSET, cursorclass=MySQLdb.cursors.DictCursor)
         currzsky = connzsky.cursor()
-        totalsql = 'select count(id) from search_hash'
+        totalsql = 'select max(id) from search_hash'
         currzsky.execute(totalsql)
         totalcounts=currzsky.fetchall()
-        total=int(totalcounts[0]['count(id)'])
+        total=int(totalcounts[0]['max(id)'])
         todaysql='select count(id) from search_hash where to_days(search_hash.create_time)= to_days(now())'
         currzsky.execute(todaysql)
         todaycounts=currzsky.fetchall()
@@ -526,6 +528,12 @@ class TagsView(ModelView):
 
 
 class KeywordsView(ModelView):
+    column_labels = {
+        'keyword': u'推荐关键字',
+        'order' : u'顺序',
+        'pic':u'图片URL',
+        'score':u'评分',
+    }
     column_default_sort = ('id', True)
     column_searchable_list = ['keyword']
     create_modal = True
@@ -599,14 +607,14 @@ def create_user(name,password,email):
     user = User(name=name,password=password,email=email)
     db.session.add(user)
     db.session.commit()
-    print u"管理员创建成功!"
+    print("管理员创建成功!")
 
 @manager.option('-np', '--newpassword', dest='newpassword')
 def changepassword(newpassword):
     name = raw_input(u'输入用户名:')
     thisuser = User.query.filter_by(name=name).first()
     if not thisuser:
-        print u"用户不存在,请重新输入用户名!"
+        print("用户不存在,请重新输入用户名!")
         name = raw_input(u'输入用户名:')    
         thisuser = User.query.filter_by(name=name).first()
     if newpassword is None:
@@ -614,7 +622,7 @@ def changepassword(newpassword):
     thisuser.password=newpassword
     db.session.add(thisuser)
     db.session.commit()
-    print u"密码已更新,请牢记新密码!"
+    print("密码已更新,请牢记新密码!")
 
 if __name__ == '__main__':
     manager.run()
